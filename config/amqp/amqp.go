@@ -74,21 +74,23 @@ func (c *Client) BindQueue(ctx context.Context, queue, exchange, routingKey stri
 func (c *Client) SetupRepairQueue(ctx context.Context, storeID string) (queueName, routingKey string, err error) {
 	const (
 		exchange = "REPAIR_TRANSACTION"
-		queue    = "COMMAND_REPAIR"
 		exchKind = "topic"
 	)
+
+	queueName = fmt.Sprintf("CLIENT_%s", storeID)
 	routingKey = fmt.Sprintf("STORE.%s.COMMAND", storeID)
 
 	if err = c.DeclareExchange(ctx, exchange, exchKind, true); err != nil {
 		return "", "", err
 	}
-	if err = c.DeclareQueue(ctx, queue); err != nil {
+	if err = c.DeclareQueue(ctx, queueName); err != nil {
 		return "", "", err
 	}
-	if err = c.BindQueue(ctx, queue, exchange, routingKey); err != nil {
+	if err = c.BindQueue(ctx, queueName, exchange, routingKey); err != nil {
 		return "", "", err
 	}
-	return queue, routingKey, nil
+
+	return queueName, routingKey, nil
 }
 
 func (c *Client) Channel() *streadway.Channel {
